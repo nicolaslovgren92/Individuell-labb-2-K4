@@ -1,0 +1,33 @@
+server:
+  port: 8080
+
+api:
+  weather:
+    base-url: https://api.openweathermap.org
+    api-key: DIN_OPENWEATHERMAP_NYCKEL_HÄR
+
+  activity:
+    base-url: https://httpbin.org
+    token: mitt-hemliga-bearer-token   # Valfri sträng – httpbin ignorerar värdet
+    # men vi demonstrerar att det skickas korrekt
+
+resilience4j:
+  retry:
+    instances:
+      weatherRetry:
+        max-attempts: 3
+        wait-duration: 1s
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+        retry-exceptions:
+          - java.lang.RuntimeException
+          - org.springframework.web.reactive.function.client.WebClientRequestException
+
+      activityRetry:
+        max-attempts: 3
+        wait-duration: 1s
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+        retry-exceptions:
+          - java.lang.RuntimeException
+          - org.springframework.web.reactive.function.client.WebClientRequestException
