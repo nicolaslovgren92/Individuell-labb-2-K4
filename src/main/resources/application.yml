@@ -7,7 +7,7 @@ server:
 api:
   weather:
     base-url: https://api.openweathermap.org
-    api-key: ec503743c7c22a76facb1ac65c6d7184
+    api-key: ${WEATHER_API_KEY:bb8826df024e7ca9a8c922a951276aab}
 
   activity:
     base-url: https://httpbin.org
