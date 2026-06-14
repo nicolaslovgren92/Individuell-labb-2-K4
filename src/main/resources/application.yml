@@ -1,4 +1,6 @@
-
+spring:
+  application:
+    name: Smart-Reseassistent
 server:
   port: 8080
 
