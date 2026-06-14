@@ -1,17 +1,44 @@
+
 server:
   port: 8080
 
 api:
   weather:
     base-url: https://api.openweathermap.org
-    api-key: DIN_OPENWEATHERMAP_NYCKEL_HÄR
+    api-key: ec503743c7c22a76facb1ac65c6d7184
 
   activity:
     base-url: https://httpbin.org
     token: mitt-hemliga-bearer-token   # Valfri sträng – httpbin ignorerar värdet
     # men vi demonstrerar att det skickas korrekt
 
-resilience4j:
+# ── Resilience4j ────────────────────────────────────────────────────────────
+
+
+resilience4j:  # ── Circuit Breaker – Yttre lagret ──────────────────────────────────────────
+  circuitbreaker:
+    instances:
+      activityCircuitBreaker:
+        # Räknar de senaste 10 anropen
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+
+        # Öppnar kretsen om 50% eller fler misslyckas
+        failure-rate-threshold: 50
+
+        # Väntar 10 sekunder i OPEN innan den testar igen (HALF-OPEN)
+        wait-duration-in-open-state: 10s
+
+        # Tillåter 3 testanrop i HALF-OPEN-läget
+        permitted-number-of-calls-in-half-open-state: 3
+
+        # Övergår automatiskt från OPEN till HALF-OPEN efter väntetiden
+        automatic-transition-from-open-to-half-open-enabled: true
+
+        # Synlig i /actuator/health
+        register-health-indicator: true
+
+ # ── Retry – Inre lagret ─────────────────────────────────────────────────────
   retry:
     instances:
       weatherRetry:
@@ -31,3 +58,21 @@ resilience4j:
         retry-exceptions:
           - java.lang.RuntimeException
           - org.springframework.web.reactive.function.client.WebClientRequestException
+
+# ── Actuator – exponerar circuit breaker-status ─────────────────────────────
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+  health:
+    circuitbreakers:
+      enabled: true
+
+logging:
+  level:
+    com.example.smartreseassistent: DEBUG
+    io.github.resilience4j: INFO
